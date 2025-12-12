@@ -1,0 +1,280 @@
+[{
+	"title": "Rotary Sensor",
+	"id": "KY-040",
+	"location": "(6,4)",
+	"description": "Description:\npin 1: CLK\npin 2: DT\npin 3: SW\npin 4: +\npin 5: GND",
+	"code": "int redPin = 2;\nint yellowPin = 3;\nint greenPin = 4;\nint aPin = 6;\nint bPin = 7;\nint buttonPin = 5;\nint state = 0;\nint longPeriod = 5000; // Time at green or red\nint shortPeriod = 700; // Time period when changing\nint targetCount = shortPeriod;\nint count = 0;\nvoid setup ()\n{\n  pinMode (aPin, INPUT);\n  pinMode (bPin, INPUT);\n  pinMode (buttonPin, INPUT);\n  pinMode (redPin, OUTPUT);\n  pinMode (yellowPin, OUTPUT);\n  pinMode (greenPin, OUTPUT);\n}\nvoid loop ()\n{\n  count++;\n  if (digitalRead (buttonPin))\n  {\n	setLights (HIGH, HIGH, HIGH);\n  }\n  else\n  {\n	int change = getEncoderTurn ();\n	int newPeriod = longPeriod + (change * 1000);\n	if (newPeriod  >= 1000 && newPeriod <= 10000)\n	{\n	  longPeriod = newPeriod;\n	}\n	if (count> targetCount)\n	{\n	  setState ();\n	  count = 0;\n	}\n  }\n  delay (1);\n}\nint getEncoderTurn ()\n{\n  // Return -1, 0, or +1\n  static int oldA = LOW;\n  static int oldB = LOW;\n  int result = 0;\n  int newA = digitalRead (aPin);\n  int newB = digitalRead (bPin);\n  if (newA != oldA || newB != oldB)\n  {\n	//Something has changed\n	if (oldA == LOW && newA == HIGH)\n	{\n	  result = - (oldB * 2 - 1);\n	}\n  }\n  oldA = newA;\n  oldB = newB;\n  return result;\n}\nint setState ()\n{\n  if (state == 0)\n  {\n	setLights (HIGH, LOW, LOW);\n	targetCount = longPeriod;\n	state = 1;\n  }\n  else if (state == 1)\n  {\n	setLights (HIGH, HIGH, LOW);\n	targetCount = shortPeriod;\n	state = 2;\n  }\n  else if (state == 2)\n  {\n	setLights (LOW, LOW, HIGH);\n	targetCount = longPeriod;\n	state = 3;\n  }\n  else if (state == 3)\n  {\n	setLights (LOW, HIGH, LOW);\n	targetCount = shortPeriod;\n	state = 0;\n  }\n}\nvoid setLights (int red, int yellow, int green)\n{\n  digitalWrite (redPin, red);\n  digitalWrite (yellowPin, yellow);\n  digitalWrite (greenPin, green);\n}"
+},
+{
+	"title": "Heartbeat",
+	"id": "KY-039",
+	"location": "(1,4)",
+	"description": "Description:\npin 1: S	analog out\npin 2: +\npin 3: GND",
+	"code": "// Pulse Monitor Test Script\nint sensorPin = 0;\ndouble alpha = 0.75;\nint period = 100;\ndouble change = 0.0;\ndouble minval = 0.0;\nvoid setup ()\n{\n  Serial.begin (9600);\n}\nvoid loop ()\n{\n    static double oldValue = 0;\n    static double oldChange = 0;\n    int rawValue = analogRead (sensorPin);\n    double value = alpha * oldValue + (1 - alpha) * rawValue;\n    Serial.print (rawValue);\n    Serial.print (\",\");\n    Serial.println (value);\n    oldValue = value;\n    delay (period);\n}"
+},
+{
+	"title": "Big sound",
+	"id": "KY-038",
+	"location": "(3,1)",
+	"description": "Microphone sound sensor module. \npin 1: A0	analog out\npin 2: GND	\npin 3: +\npin 4: D0	digital out",
+	"code": ""
+},
+{
+	"title": "Small sound",
+	"id": "KY-037",
+	"location": "(4,1)",
+	"description": "Sensitive microphone sensor module.\npin 1: CLK\npin 2: DT\npin 3: SW\npin 4: +\npin 5: GND",
+	"code": ""
+},
+{
+	"title": "Touch",
+	"id": "KY-036",
+	"location": "(3,2)",
+	"description": "When a metal touch Sensor senses a key signal, LED ights, otherwise off.\npin 1: A	analog out\npin 2: GND\npin 3: +\npin 4: D	digital out",
+	"code": ""
+},
+{
+	"title": "Hall magnetic",
+	"id": "KY-035",
+	"location": "(6,1)",
+	"description": "Bihor magnetic sensor.\npin 1: S 	analog out\npin 2: +\npin 3: GND",
+	"code": ""
+},
+{
+	"title": "7 color LED",
+	"id": "KY-034",
+	"location": "(2,4)*",
+	"description": "Automatic flashing colorful LED module.\npin 1: CLK\npin 2: DT\npin 3: SW\npin 4: +\npin 5: GND",
+	"code": ""
+},
+{
+	"title": "Tracking",
+	"id": "KY-033",
+	"location": "(5,1)",
+	"description": "Description\npin 1: S	digital out?\npin 2: +\npin 3: GND",
+	"code": ""
+},
+{
+	"title": "Avoid",
+	"id": "KY-032",
+	"location": "(6,1)",
+	"description": "Infrared obstacle avoidance sensor is designed for the design of a wheeled robot obstacle avoidance sensor distance adjustable.\nWorking voltage: DC 3.3V-5V\nWorking current: ≥ 20mA\nOperating temperature: -10 ℃ - +50 ℃\ndetection distance :2-40cm\nIO Interface: 4-wire interfaces (- / + / S / EN)\nOutput signal: TTL level (low level there is an obstacle, no obstacle high)\nAdjustment: adjust multi-turn resistance\nEffective angle: 35 °\nSize: 28mm × 23mm\nWeight Size: 9g\npin 1: GND\npin 2: +\npin 4: S\npin 4: EN",
+	"code": "// Here we use the obstacle avoidance module and a digital interface, built-in 13 LED build a simple circuit, making avoidance warning lamp, the obstacle avoidance Sensor Access Digital 3 interface, when obstacle avoidance sensor senses a signal, LED light, and vice versa off.\nint Led = 13 ;// define LED Interface\nint buttonpin = 3; // define the obstacle avoidance sensor interface\nint val ;// define numeric variables val\nvoid setup ()\n{\n  pinMode (Led, OUTPUT) ;// define LED as output interface\n  pinMode (buttonpin, INPUT) ;// define the obstacle avoidance sensor output interface\n}\nvoid loop ()\n{\n  val = digitalRead (buttonpin) ;// digital interface will be assigned a value of 3 to read val\n  if (val == HIGH) // When the obstacle avoidance sensor detects a signal, LED flashes\n  {\n    digitalWrite (Led, HIGH);\n  }\n  else\n  {\n    digitalWrite (Led, LOW);\n  }\n}"
+},
+{
+	"title": "Tap module",
+	"id": "KY-031",
+	"location": "(,)",
+	"description": "13 knock sensor module and a digital interface, built-in LED build a simple circuit to produce percussion flasher. 13 Interface comes with digital LED, will knock sensor connected digital 3 interface, when percussion sensor senses Measure To percussive signals, LED flashing light.\npin 1: GND\npin 2: +\npin 3: S",
+	"code": ""
+},
+{
+	"title": "Two-color",
+	"id": "KY-029",
+	"location": "(4,3)",
+	"description": "Color: Green + Red\nDiameter: 5mm\nCase Color: None\nPackage Type: Diffusion\nVoltage (V): G :2.3-2 .6 V; R :1.9-2 .2 V\nUsing a current (MA): 20\nViewing angle: Wavelength (NM): 571 +625\nLuminous intensity (MCD) :20-40; 60-80\nStent type: long-legged\nOur products are widely used in electronic dictionary, PDA, MP3, headphones, digital cameras, VCD, DVD, car audio, communications, computers, Chargers, power amplifier, instrumentation, gifts, electronic toys and mobile phones, and many other fields.\npin 1: S\npin 2: +\npin 3: GND",
+	"code": "// Arduino test code:\nint redpin = 11; // select the pin for the red LED\nint bluepin = 10; // select the pin for the blueLED\nint val;\nvoid setup () {\n  pinMode (redpin, OUTPUT);\n  pinMode (bluepin, OUTPUT);\n  Serial.begin (9600);\n}\nvoid loop () {\n for(val=255;val>0;val--) {\n   analogWrite (11, val);\n   analogWrite (10, 255 - val);\n   delay(5);\n }\n for(val=255;val<255;val++) {\n    analogWrite (11, val);\n    analogWrite (10, 255 - val);\n   delay(5);\n }\n}"
+},
+{
+	"title": "Temp",
+	"id": "KY-028",
+	"location": "(,)?",
+	"description": "Temperature sensor?",
+	"code": ""
+},
+{
+	"title": "Light cup",
+	"id": "KY-027",
+	"location": "(1,5)",
+	"description": "Magic Light Cup modules are easy to Interactive Technology Division developed a can and ARDUINO interactive modules, PWM dimming principle is to use the principle of two modules brightness changes. Mercury switches provide a digital signal that triggers the PWM regulator, through the program design, We can see the light like two cups filled with the effect of shuffling back and forth.",
+	"code": "int LedPinA = 5;\nint LedPinB = 6;\nint ButtonPinA = 7;\nint ButtonPinB = 4;\nint buttonStateA = 0;\nint buttonStateB = 0;\nint brightness = 0;\nvoid setup ()\n{\n  pinMode (LedPinA, OUTPUT);\n  pinMode (LedPinB, OUTPUT);\n  pinMode (ButtonPinA, INPUT);\n  pinMode (ButtonPinB, INPUT);\n}\nvoid loop ()\n{\n  buttonStateA = digitalRead (ButtonPinA);\n  if (buttonStateA == HIGH && brightness! = 255)\n  {\n    brightness + +;\n  }\n  buttonStateB = digitalRead (ButtonPinB);\n  if (buttonStateB == HIGH && brightness! = 0)\n  {\n    brightness -;\n  }\n  analogWrite (LedPinA, brightness); // A few Guan Yuan (ii) ?\n  analogWrite (LedPinB, 255 - brightness);// B Yuan (ii) a few Bang ?\n  delay (25);\n}"
+},
+{
+	"title": "",
+	"id": "KY-027",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-026",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-025",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-024",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-023",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-022",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-021",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-020",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-019",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-018",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-017",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-016",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-015",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-014",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-013",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-012",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-011",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-010",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-009",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-008",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-007",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-006",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-005",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-004",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-003",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-002",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+},
+{
+	"title": "",
+	"id": "KY-001",
+	"location": "(,)",
+	"description": "Description",
+	"code": ""
+}]

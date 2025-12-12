@@ -1,0 +1,303 @@
+{% extends "layout.html" %}
+{% block head %}
+	{{ super() }}
+	<script type="text/javascript">
+		$(document).ready(function() {
+			kefState();
+
+			$("#deskPowerOn").click(function(){
+				execute("computer", "set", { "state": "on" });
+			});
+			$("#deskPowerOff").click(function(){
+				execute("computer", "set", { "state": "off" });
+			});
+
+			$("#kefPower").click(function(){
+				execute("speaker", "set", { "state": "on" }, handleKefState);
+			});
+			$("#kefWifi").click(function(){
+				execute("speaker", "set", { "source": "wifi" }, handleKefState);
+			});
+			$("#kefBluetooth").click(function(){
+				execute("speaker", "set", { "source": "bluetooth" });
+			});
+			$("#kefPC").click(function(){
+				execute("speaker", "set", { "source": "pc" });
+			});
+			$("#kefPrevious").click(function(){
+				execute("speaker", "set", { "media": "previous" });
+			});
+			$("#kefPlay").click(function(){
+				execute("speaker", "set", { "media": "pause" });
+			});
+			$("#kefNext").click(function(){
+				execute("speaker", "set", { "media": "next" });
+			});
+			$("#kefMute").click(function(){
+				execute("speaker", "set", { "volume": "mute" });
+			});
+			$("#kefVolumeDown").click(function(){
+				execute("speaker", "set", { "volume": "decrease" });
+			});
+			$("#kefVolumeUp").click(function(){
+				execute("speaker", "set", { "volume": "increase" });
+			});
+		});
+
+		function loadServiceStatus() {
+			$.ajax({
+				type: "GET",
+				url: "/services",
+				success: function(data) {
+					var status_body = '<ul class="status">';
+					$.each(data, function(k, v) {
+						indicator = v == '0' ? 'online' : 'offline';
+						status_body += '<li class="status '+ indicator +'">'+k+'</li>';
+					});
+					status_body += "</ul>"
+					$('#services').html(status_body);
+				},
+				error: function(data) {
+					$('#services').html('<span><i>failed to load services status:' + JSON.stringify(data) + '</i></span>');
+				},
+				contentType: "application/json",
+				dataType : 'json'
+			});
+		}
+		
+		function execute(device, command, msg, onSuccess = function(data) {}, onError = function(data) {}) {
+			console.log("'" + device + "' execute command '"+ command +"' msg '"+ msg + "'");
+			$('#kefLoader').addClass("loader");
+			$.ajax({
+				type: "POST",
+				url: "/execute/" + device + "/" + command,
+				data: JSON.stringify(msg),
+				contentType: "application/json",
+				dataType : 'json'
+			})
+			.done( function (data, status) {
+				console.log("executed command: ", data);
+				$('#kefLoader').removeClass("loader");
+				onSuccess(data);
+		  })
+		  .fail( function (data, status) {
+				console.log("failed to execute command: ", data);
+				$('#kefLoader').removeClass("loader");
+				onError(data);
+		  });
+		}
+
+		function kefState() {
+			console.log("retrieving kef source");
+			$('#kefLoader').addClass("loader");
+			$.ajax({
+				type: "GET",
+				url: "/kef",
+				success: function(state) {
+				},
+				error: function(message) {
+				},
+				contentType: "application/json",
+				dataType : 'json'
+			})
+			.done( function (data, status) {
+				handleKefState(data);
+		  })
+		  .fail( function (data, status) {
+				console.log("failed to retrieve kef state: ", data);
+				$('#kefPower').removeClass("secondary");
+				$('#kefPower').addClass("warning");
+				resetSourceState();
+				$('#kefLoader').removeClass("loader");
+		  });
+		}
+
+		function handleKefState(state){
+			console.log("kef state: ", state);
+			$('#kefVolume').text(state['volume']);
+
+			$('#kefPower').removeClass('secondary');
+			if (state['on']) {
+				$('#kefPower').addClass('success');
+			} else {
+				$('#kefPower').addClass('alert');
+			}
+
+			if ('source' in state) {
+				source = state['source'].toLowerCase();
+				resetSourceState();
+				if (source == "wifi") {
+					$('#kefWifi').removeClass('secondary');
+					$('#kefWifi').addClass('hollow');
+					$('#kefWifi').addClass('success');
+					$('#kefWifi').addClass('is-active');
+				} else if (source == "bluetooth") {
+					$('#kefWifi').removeClass('secondary');
+					$('#kefBluetooth').addClass('hollow');
+					$('#kefBluetooth').addClass('success');
+				} else if (source == "pc") {
+					$('#kefWifi').removeClass('secondary');
+					$('#kefPC').addClass('hollow');
+					$('#kefPC').addClass('success');
+				}
+			}
+			$('#kefLoader').removeClass("loader");
+		}
+
+		function resetSourceState() {
+			$('#kefWifi').addClass('secondary');
+			$('#kefWifi').removeClass('hollow');
+			$('#kefWifi').removeClass('success');
+			$('#kefBluetooth').addClass('secondary');
+			$('#kefBluetooth').removeClass('hollow');
+			$('#kefBluetooth').removeClass('success');
+			$('#kefPC').addClass('secondary');
+			$('#kefPC').removeClass('hollow');
+			$('#kefPC').removeClass('success');
+		}
+
+		loadServiceStatus();
+	</script>
+{% endblock %}
+{% block content %}
+	<div class="row">
+		<div class="large-12 columns">
+			<div class="panel">
+				<h4>Welkom Frambozen Taart liefhebbers!<hr/></h4>
+				<h5 class="subheader">Whoop Whoop!</h5>
+			</div>
+		</div>
+		<hr/>
+	</div>
+	<div class="row">
+		<div class="large-6 small-12 columns">
+			<div class="panel">
+				<h5>Switches</h5>
+				<table style="width:100%;">
+				<tr>
+					<th>Desk Power</th>
+					<td>
+							<div class="button-group">
+								<button id="deskPowerOn" class="button small">On</button>
+								<button id="deskPowerOff" class="button small">Off</button>
+							</div>
+						</td>
+					</tr>
+				<tr>
+					<th>TV</th>
+					<td>
+							<div class="button-group">
+								<button id="tvOn" class="button small">On</button>
+								<button id="tvOff" class="button small">Off</button>
+							</div>
+						</td>
+					</tr>
+				<tr>
+					<th>Sofa Light</th>
+					<td>
+							<div class="button-group">
+								<button id="sofaOn" class="button small">On</button>
+								<button id="sofaOff" class="button small">Off</button>
+							</div>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<div class="large-6 small-12 columns">
+			<div class="panel kef-control">
+				<h5>KEF control<div id="kefLoader"></div></h5>
+				<div class="text-center" style="white-space: nowrap;">
+					<button id="kefPower" type="button" class="button secondary">
+						<img class="kef-control" src="/static/images/media/power-button.svg"/>
+					</button>
+					<button id="kefWifi" type="button" class="button secondary">
+						<img class="kef-control" src="/static/images/media/wifi.svg"/>
+					</button>
+					<button id="kefBluetooth" type="button" class="button secondary">
+						<img class="kef-control" src="/static/images/media/bluetooth.svg"/>
+					</button>
+					<button id="kefPC" type="button" class="button secondary">
+						<img class="kef-control" src="/static/images/media/pc.svg"/>
+					</button>
+				</div>
+				<div class="text-center" style="white-space: nowrap;">
+					<span style="width:45px;display: inline-block;">&nbsp;</span>
+					<button id="kefPrevious" type="button" class="button secondary">
+						<img class="kef-control" src="/static/images/media/control-previous.png"/>
+					</button>
+					<button id="kefPlay" type="button" class="button secondary">
+						<img class="kef-control" src="/static/images/media/play-button.svg"/>
+					</button>
+					<button id="kefNext" type="button" class="button secondary">
+						<img class="kef-control" src="/static/images/media/control-next.png"/>
+					</button>
+				</div>
+				<div class="text-center">
+					<span id="kefVolume"style="width:45px;display: inline-block;">&nbsp;</span>
+					<button id="kefMute" type="button" class="button secondary">
+						<img class="kef-control " src="/static/images/media/volume_mute.svg"/>
+					</button>
+					<button id="kefVolumeDown" type="button" class="button secondary">
+						<img class="kef-control" src="/static/images/media/volume_down.svg"/>
+					</button>
+					<button id="kefVolumeUp" type="button" class="button secondary">
+						<img class="kef-control" src="/static/images/media/volume_up.svg"/>
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-4 small-12 columns">
+			<div class="panel">
+				<img src="/static/images/lora-icon.png" alt="Lora domotica">
+			</div>
+		</div>
+		<div class="large-4 small-6 columns">
+			<div class="panel">
+				<iframe src="http://192.168.1.21:5000/grafana/d-solo/Z_svvSWRk/matriful?orgId=1&theme=light&panelId=10" style="width:100%;" height="260" frameborder="0"></iframe>
+			</div>
+		</div>
+		<div class="large-4 small-6 columns">
+			<div class="panel">
+				<iframe src="http://192.168.1.21:5000/grafana/d-solo/Z_svvSWRk/matriful?orgId=1&theme=light&panelId=4" style="width:100%;" height="260" frameborder="0"></iframe>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="large-3 small-6 columns">
+			<div class="panel">
+				<h5>Services</h5>
+				<div id="services" class="services">
+					<span class="loader"></span>
+				</div>
+			</div>
+		</div>
+		<div class="large-3 small-6 columns">
+			<div class="panel">
+				<h5>Spotify</h5>
+				<p>Spotify control</p>
+				<a href="/spotify" class="button">Spotify</a>
+			</div>
+		</div>
+		<div class="large-3 small-6 columns">
+			<div class="panel">
+				<h5>Balkon</h5>
+				<iframe src="http://192.168.1.21:5000/grafana/d-solo/jSISE0mgz/climate?orgId=1&var-instance=bme280&var-instance=metriful&var-instance=piflora&theme=light&panelId=54" style="width:100%;" height="160" frameborder="0"></iframe>
+			</div>
+			<div class="panel">
+				<iframe src="http://192.168.1.21:5000/grafana/d-solo/jSISE0mgz/climate?orgId=1&var-instance=bme280&var-instance=metriful&var-instance=piflora&theme=light&panelId=55" style="width:100%;" height="160" frameborder="0"></iframe>
+			</div>
+		</div>
+		<div class="large-3 small-6 columns">
+			<div class="panel">
+				<h5>Arduino Sensors</h5>
+				<p>
+					View al ardiuno sensors
+				</p>
+				<a href="/sensors/arduino" class="button">Sensors</a>
+			</div>
+		</div>
+	</div>
+{% endblock %}
