@@ -1,5 +1,5 @@
-import os, json, collections, re
-from datetime import datetime, timedelta
+import os
+from datetime import datetime
 from flask import render_template, Markup
 from influxdb import InfluxDBClient
 from dateutil import parser, tz
@@ -9,7 +9,7 @@ from logger import log
 # Configure InfluxDB connection from environment variables
 dbhost = os.getenv("INFLUXDB_HOST", "localhost")
 dbport = int(os.getenv("INFLUXDB_PORT", "8086"))
-dbuser = os.getenv("INFLUXDB_USER", "flora")
+dbuser = os.getenv("INFLUXDB_USER", "user")
 dbpassword = os.getenv("INFLUXDB_PASSWORD", "")
 dbname = os.getenv("INFLUXDB_FLORA_DATABASE", "flora")
 
@@ -39,19 +39,16 @@ def summary(data, waterings):
         dt = parser.parse(p["time"]).astimezone(tz.gettz("europe/amsterdam"))
         time = dt.strftime("%H:%M")  #  %d %b")
         watering = last_watering(waterings[p["node"]])
-        table += (
-            "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>"
-            % (
-                p["node"],
-                p["temperature"],
-                p["moisture"],
-                p["conductivity"],
-                p["light"],
-                p["battery"],
-                watering,
-                time,
-            )
-        )
+        table += f"""<tr>
+            <td>{p['node']}</td>
+            <td>{p['temperature']}</td>
+            <td>{p['moisture']}</td>
+            <td>{p['conductivity']}</td>
+            <td>{p['light']}</td>
+            <td>{p['battery']}</td>
+            <td>{watering}</td>
+            <td>{time}</td>
+        </tr>"""
 
     table += "</table>"
 
@@ -80,11 +77,7 @@ def watering_table(data):
             # watering = re.split(':\d{2}\.\d+', str(delta))[0]
             watering = delta.days + delta.seconds / 24 / 3600
 
-            td = "<tr><td>%s</td><td>%.1f days</td><td>%s</td></tr>" % (
-                i[0][0],
-                watering,
-                time,
-            )
+            td = f"<tr><td>{i[0][0]}</td><td>{watering:.1f} days</td><td>{time}</td></tr>"
         table += td
     table += "</table>"
 
@@ -95,10 +88,9 @@ def last_watering(data):
     days = ""
     for p in data:
         dt = parser.parse(p["time"]).astimezone(tz.gettz("europe/amsterdam"))
-        time = dt.strftime("%d %b %H:%M")
         delta = datetime.now(dt.tzinfo) - dt
         watering = delta.days + delta.seconds / 24 / 3600
-        days = "%.1f" % watering
+        days = f"{watering:.1f}"
     return days
 
 
@@ -109,7 +101,7 @@ def flora_page():
         watering_data = load_waterings(client)
 
         table = summary(data, watering_data)
-    except Exception as e:
+    except (ConnectionError, OSError, ValueError) as e:
         log.error(f"failed to load data: {e}")
         table = "<table></table>"
 
@@ -125,7 +117,7 @@ def flora_frame(theme):
         watering_data = load_waterings(client)
 
         table = summary(data, watering_data)
-    except Exception as e:
+    except (ConnectionError, OSError, ValueError) as e:
         log.error(f"failed to load data: {e}")
         table = "<table></table>"
 

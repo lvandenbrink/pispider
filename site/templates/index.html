@@ -51,7 +51,7 @@
 				success: function(data) {
 					var status_body = '<ul class="status">';
 					$.each(data, function(k, v) {
-						indicator = v == '0' ? 'online' : 'offline';
+						var indicator = v == '0' ? 'online' : 'offline';
 						status_body += '<li class="status '+ indicator +'">'+k+'</li>';
 					});
 					status_body += "</ul>"
@@ -124,7 +124,7 @@
 			}
 
 			if ('source' in state) {
-				source = state['source'].toLowerCase();
+				var source = state['source'].toLowerCase();
 				resetSourceState();
 				if (source == "wifi") {
 					$('#kefWifi').removeClass('secondary');
@@ -266,7 +266,7 @@
 			<div class="panel">
 				<h5>Arduino Sensors</h5>
 				<p>
-					View al ardiuno sensors
+					View all arduino sensors
 				</p>
 				<a href="/sensors/arduino" class="button">Sensors</a>
 			</div>

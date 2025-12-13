@@ -133,7 +133,7 @@ def execute_command(device, command):
 
     log.info(f"execute for device 'device': '{data}'")
 
-    if data == None:
+    if data is None:
         return json.dumps({"message": "failed to understand request"}), 400
 
     return mqtt.execute(device, command, data)

@@ -39,7 +39,7 @@ device_name = os.getenv('DEVICE_NAME', 'device')
 
 def read_temp(device_file):
 	temperature = read_device(device_file)
-	if (not temperature == None):
+	if (temperature is not None):
 		log.info("read %s: %f" % (device_file, temperature))
 		publish_temp(temperature)
 
@@ -82,6 +82,8 @@ def publish_temp(temperature):
 			port=mqtt_port,
 			auth=auth
 		)
+		if result is None:
+			log.info("message published successfully: %s", result)
 	
 	except Exception as e:
 		log.exception(e)

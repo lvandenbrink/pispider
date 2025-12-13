@@ -35,9 +35,13 @@
 				<script type="text/javascript">
 					var images = ["fbi-1.png", "fbi-2.png", "fbi-3.png", "fbi-4.png"];
 					var img = images[ Math.floor( Math.random() * images.length) ];
-					var imgStr = '<img src="/static/images/errors/' + img + '" alt = "404" class="left" width="100" style="padding: 10px 20px 0px 0px;"/>';
-					document.write(imgStr);
-					document.close();
+					var imgElement = document.createElement('img');
+					imgElement.src = '/static/images/errors/' + img;
+					imgElement.alt = '404';
+					imgElement.className = 'left';
+					imgElement.width = 100;
+					imgElement.style.padding = '10px 20px 0px 0px';
+					document.getElementById('error-image-container').appendChild(imgElement);
 				</script>
 				<h2>Nothing to see here.</h2>
 				<h5>Move along. Move along.</h5>
