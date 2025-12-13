@@ -1,8 +1,6 @@
-# import spotify as sp
 import subprocess
 from logger import log
 from flora import flora_page, flora_frame
-from energy import energy_page
 from mqtt import Mqtt
 import json, time, os
 from flask import Flask, render_template, request
@@ -28,8 +26,8 @@ SERVICES = [
     "site",
     "temperature",
 ]
-KEF_IP = os.getenv('KEF_IP', '192.168.1.30')
-LOG_DIR = os.getenv('LOG_DIR', '/mnt/spiderdrive/logs/')
+KEF_IP = os.getenv('KEF_IP', '192.168.1.1')
+LOG_DIR = os.getenv('LOG_DIR', '/var/log/')
 
 
 mqtt = Mqtt()
@@ -65,11 +63,6 @@ def services_state():
 @app.route("/flora")
 def flora():
     return flora_page()
-
-
-@app.route("/energy")
-def energy():
-    return energy_page()
 
 
 @app.route("/sensors/arduino", methods=["GET"])
