@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+{% block head %}
+	{{ super() }}
+	<script type="text/javascript">
+		$(document).ready(function() {
+			console.log("logging page {{ file }}");
+			{% if file is defined %}
+				console.log("show log {{ file }}");
+				var output = document.getElementById('output');
+
+				xhr = new XMLHttpRequest();
+				xhr.open('GET', '/logs/stream/{{ file }}');
+				xhr.send();
+
+				setInterval(function() {
+					console.log("reload log {{ file }}");
+					output.textContent = xhr.responseText;
+					output.scrollTop = output.scrollHeight;
+				}, 1000);
+			{% endif %}
+		});
+	</script>
+	<style>
+	.logs {
+		min-height: 30px;
+		max-height: 500px;
+		width: 100%;
+		overflow-x: auto;
+		overflow-y: auto;
+		display: flex;
+		flex-direction: column-reverse;
+		box-sizing: border-box;
+		background-color: #001628;
+		color: white;
+		padding: 2px 10px;
+	}
+	</style>
+{% endblock %}
+{% block content %}
+	<div class="row">
+		<div class="large-12 columns">
+			<div class="panel">
+				<h4>Pi Spider Logs{% if file is defined %}: {{file}}{% endif %}</h4>
+				<div class="button-group no-gaps">
+					<a class="button" id="btn-climate" href="/logs/climate">Climate</a>
+					<a class="button" id="btn-domotica" href="/logs/domotica">Domotica</a>
+					<a class="button" id="btn-electricity-meter" href="/logs/electricity-meter">Electricity Meter</a>
+					<a class="button" id="btn-flora" href="/logs/flora">Flora</a>
+					<a class="button" id="btn-flora-persists" href="/logs/flora-persists">Flora Persists</a>
+					<a class="button" id="btn-hives" href="/logs/hives">Hives</a>
+					<a class="button" id="btn-metriful" href="/logs/metriful">Metriful</a>
+					<a class="button" id="btn-site" href="/logs/site">Site</a>
+				</div>
+				<div class="logs">
+					<pre id="output"></pre>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

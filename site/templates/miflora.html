@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+{% block head %}
+<meta http-equiv="refresh" content="600" /> <!-- refresh 10min -->
+{{ super() }}
+<script src="/static/script/jquery.tablesorter.js"></script>
+<script>
+	$(document).ready(function() {
+		$(".flora-table").tablesorter();
+	});
+</script>
+{% endblock %}
+{% block content %}
+<div class="row">
+	<div class="large-12 columns">
+		<div class="panel">
+			<h4>Flora Monitor
+				<hr class="header-border">
+			</h4>
+			<img class="content-banner" src="/static/images/plant-king.png" alt="Plant King" />
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="large-12 columns">
+		<div class="panel">
+			<h5 class="left">Measurements</h5><span class="right"><i id="measurement_time">{{ measurement_time }}</i> &nbsp; &nbsp;</span>
+			<div style="clear:both;"></div>
+			<div id="measurements">{{ measurements }}</div>
+			<div id="debug"></div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="large-12 columns">
+		<div class="panel">
+			<table class="flora-description">
+				<thead>
+					<tr>
+						<th>Plant</th>
+						<th>Zomer</th>
+						<th>Winter</th>
+						<th>Opmerking</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Crassula</td>
+						<td>1-2 weken</td>
+						<td>6 weken</td>
+						<td>Geef de Crassula Ovata af en toe water als de grond goed droog is. Wanneer de bladeren van de Crassula rimpelig worden is dit een teken dat de plant te weinig water krijgt.</td>
+					</tr>
+					<tr>
+						<td>Dracaena</td>
+						<td>2-3 weken</td>
+						<td>4-6 weken</td>
+						<td>De Dracaena Lemon Lime verbruikt weinig water. Geef de kamerplant pas water, als de grond droog aanvoelt.</td>
+					</tr>
+					<tr>
+						<td>Geldboom</td>
+						<td>2-3 weken</td>
+						<td>3-4 weken</td>
+						<td>De Pachira heeft eens in de 3 weken een flinke scheut water nodig. De grond moet uitgedroogd zijn.</td>
+					</tr>
+					<tr>
+						<td>Lepelplant</td>
+						<td>2x week</td>
+						<td>2x week</td>
+						<td>De spathiphyllum sweet sebastiano of Vredeslelie verbruikt redelijk veel water. Bij een watertekort geeft deze kamerplant dat aan door te gaan hangen.</td>
+					</tr>
+					<tr>
+						<td>Pannenkoekenplant</td>
+						<td>1x week</td>
+						<td></td>
+						<td>De Pannenkoekenplant iedere week een kleine hoeveelheid water te geven. Zorg ervoor dat de grond van het plantje lichtvochtig blijft.</td>
+					</tr>
+					<tr>
+						<td>Rhipsalis</td>
+						<td></td>
+						<td>4 weken</td>
+						<td>Weinig water nodig, zeker niet te nat en soms laten drogen. Hangt ook af van de standplaats.</td>
+					</tr>
+					<tr>
+						<td>Trachycarpus</td>
+						<td></td>
+						<td></td>
+						<td>In de zomer de grond vochtig te houden en in de winter minder water zodat het vocht niet bevriest.</td>
+					</tr>
+					<tr>
+						<td>Vrouwentong</td>
+						<td>2 weken</td>
+						<td>6-8 weken</td>
+						<td>Sansevieria's verbruiken zeer weinig water.</td>
+					</tr>
+					<tr>
+						<td>Zamioculcas</td>
+						<td>1x week</td>
+						<td>2-4 weken</td>
+						<td>Zamioculcassen verbruiken niet veel water. Dit komt doordat de plant water opslaat in de wortels en stammen.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+{% endblock %}

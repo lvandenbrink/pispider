@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+<meta charset="utf-8" />
+	<!-- Set the viewport width to device width for mobile -->
+	<meta name="viewport" content="width=device-width" />
+
+	<title>Frambozen Taart</title>
+
+	<link rel="stylesheet" href="/static/style/normalize.css">
+	<link rel="stylesheet" href="/static/style/foundation.css">
+	<link rel="stylesheet" href="/static/style/style.css">
+</head>
+<body>
+	<!-- Header and Nav -->
+	<div class="row">
+		<div class="small-3 columns">
+			<img src="/static/logo.png" style="width: 150px; margin: 0px 10px;"><br>
+		</div>
+		<div class="small-6 columns">
+			<ul class="button-group right">
+				<li><a href="/" class="button">Home</a></li>
+				<li><a href="/flora" class="button">Flora</a></li>
+			</ul>
+		</div>
+		<hr>
+	</div>
+	<!-- End Header and Nav -->
+	
+	<!-- Header Content -->
+	<div class="row">
+		<div class="small-7 small-centered columns">
+			<div class="panel" style="min-height: 180px;">
+				<script type="text/javascript">
+					var images = ["fbi-1.png", "fbi-2.png", "fbi-3.png", "fbi-4.png"];
+					var img = images[ Math.floor( Math.random() * images.length) ];
+					var imgElement = document.createElement('img');
+					imgElement.src = '/static/images/errors/' + img;
+					imgElement.alt = '404';
+					imgElement.className = 'left';
+					imgElement.width = 100;
+					imgElement.style.padding = '10px 20px 0px 0px';
+					document.getElementById('error-image-container').appendChild(imgElement);
+				</script>
+				<h2>Nothing to see here.</h2>
+				<h5>Move along. Move along.</h5>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Footer -->
+	<footer class="row">
+		<div class="large-12 columns">
+			<hr />
+			<div class="row">
+				<div class="large-6 columns">
+					<p>&copy; 2017 Laurens van den Brink.</p>
+				</div>
+				<div class="large-6 columns">
+					<ul class="inline-list right">
+						<li><a href="#">Home</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</footer>
+</body>
+</html>
