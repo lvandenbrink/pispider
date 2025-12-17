@@ -18,6 +18,9 @@
 .conceal {
 	display: none;
 }
+.error-image-container img {
+	margin-right: 10px;
+}
 
 .spotify-control {
 	width: 65px;
