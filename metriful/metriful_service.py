@@ -37,8 +37,8 @@ CYCLE_PERIOD = CYCLE_PERIOD_100_S
 # MQTT connection variables
 mqtt_broker = os.getenv("MQTT_BROKER", "localhost")
 mqtt_port = int(os.getenv("MQTT_PORT", "1883"))
-mqtt_username = os.getenv("MQTT_USERNAME", "")
-mqtt_password = os.getenv("MQTT_PASSWORD", "")
+mqtt_user = os.getenv("MQTT_USERNAME", "")
+mqtt_pass = os.getenv("MQTT_PASSWORD", "")
 mqtt_timeout = int(os.getenv("MQTT_TIMEOUT", "120"))
 mqtt_topic = os.getenv("METRIFUL_TOPIC", "sensor/climate/metriful")
 
@@ -164,6 +164,10 @@ if "__main__" == __name__:
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
     client.loop_start()
+   
+    if mqtt_user:
+        client.username_pw_set(mqtt_user, mqtt_pass)
+
     client.connect(mqtt_broker, mqtt_port, mqtt_timeout)
 
     # Set up the GPIO and I2C communications bus
