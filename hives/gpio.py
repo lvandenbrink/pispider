@@ -6,8 +6,8 @@ import paho.mqtt.publish as publish
 
 mqtt_broker = os.getenv("MQTT_BROKER", "localhost")
 mqtt_port = int(os.getenv("MQTT_PORT", "1883"))
-mqtt_username = os.getenv("MQTT_USERNAME", "")
-mqtt_password = os.getenv("MQTT_PASSWORD", "")
+mqtt_user = os.getenv("MQTT_USERNAME", "")
+mqtt_pass = os.getenv("MQTT_PASSWORD", "")
 mqtt_topic = os.getenv("MQTT_HIVES_TOPIC", "device/#")
 
 COMPUTER = "computer"
@@ -87,5 +87,5 @@ class Gpio:
 
     def send_command(self, device, command, data):
         topic = f"device/{device}/{command}"
-        auth = {'username': mqtt_username, 'password': mqtt_password} if mqtt_username else None
+        auth = {'username': mqtt_user, 'password': mqtt_pass} if mqtt_user else None
         publish.single(topic, json.dumps(data), hostname=mqtt_broker, port=mqtt_port, auth=auth)

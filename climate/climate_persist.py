@@ -12,11 +12,10 @@ from influxdb.exceptions import InfluxDBClientError, InfluxDBServerError
 # MQTT connection variables
 mqtt_broker = os.getenv("MQTT_BROKER", "localhost")
 mqtt_port = int(os.getenv("MQTT_PORT", "1883"))
-mqtt_username = os.getenv("MQTT_USERNAME", "")
-mqtt_password = os.getenv("MQTT_PASSWORD", "")
+mqtt_user = os.getenv("MQTT_USERNAME", "")
+mqtt_pass = os.getenv("MQTT_PASSWORD", "")
 mqtt_topic = os.getenv("CLIMATE_TOPIC", "sensor/climate")
-mqtt_timeout = os.getenv("MQTT_TIMEOUT", "120")
-
+mqtt_timeout = int(os.getenv("MQTT_TIMEOUT", "120"))
 
 # Configure InfluxDB connection variables
 influx_host = os.getenv("INFLUXDB_HOST", "localhost")
@@ -111,7 +110,7 @@ def on_disconnect(_client, _userdata, rc):
 # The callback for when a PUBLISH message is received from the server.
 def on_message(_client, _userdata, msg):
     try:
-        device = msg.topic[len(mqtt_topic) - 1 :]
+        device = msg.topic[len(mqtt_topic) + 1 :]
         entry = msg.payload.decode("utf-8")
 
         data = prepare_data(device, entry)
@@ -140,18 +139,16 @@ if "__main__" == __name__:
             logging.exception("failed to connect to influx")
             time.sleep(120)
 
-    auth = (
-        {"username": mqtt_username, "password": mqtt_password}
-        if mqtt_username
-        else None
-    )
 
     client = mqtt.Client()
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
     client.on_message = on_message
 
-    client.connect(mqtt_broker, mqtt_port, mqtt_timeout, auth=auth)
+    if mqtt_user:
+        client.username_pw_set(mqtt_user, mqtt_pass)
+
+    client.connect(mqtt_broker, mqtt_port, mqtt_timeout)
 
     # Blocking call that processes network traffic, dispatches callbacks and
     # handles reconnecting.

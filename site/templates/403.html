@@ -43,8 +43,6 @@
 					imgElement.style.padding = '10px 20px 0px 0px';
 					document.getElementById('error-image-container').appendChild(imgElement);
 				</script>
-				<h2>Nothing to see here.</h2>
-				<h5>Move along. Move along.</h5>
 			</div>
 		</div>
 	</div>
@@ -67,3 +65,26 @@
 	</footer>
 </body>
 </html>
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="small-7 small-centered columns">
+        <div class="panel" style="min-height: 180px;">
+            <div id="error-image-container">
+				<img id="error1" src="/static/images/errors/fbi-1.png" alt="500" class="left conceal" width="100">
+				<img id="error2" src="/static/images/errors/fbi-2.png" alt="500" class="left conceal" width="100">
+				<img id="error3" src="/static/images/errors/fbi-3.png" alt="500" class="left conceal" width="100">
+				<img id="error4" src="/static/images/errors/fbi-4.png" alt="500" class="left conceal" width="100">
+				<script type="text/javascript">
+					var images = ["error1", "error2", "error3", "error4"];
+					var img = images[ Math.floor( Math.random() * images.length) ];
+					document.getElementById(img).style.display = 'block';
+				</script>
+			</div>
+			<h2>Nothing to see here.</h2>
+			<h5>Move along. Move along.</h5>
+        </div>
+    </div>
+</div>
+{% endblock %}

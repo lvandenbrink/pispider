@@ -11,8 +11,8 @@ import paho.mqtt.client as mqtt
 # MQTT connection variables
 mqtt_broker = os.getenv("MQTT_BROKER", "localhost")
 mqtt_port = int(os.getenv("MQTT_PORT", "1883"))
-mqtt_username = os.getenv("MQTT_USERNAME", "")
-mqtt_password = os.getenv("MQTT_PASSWORD", "")
+mqtt_user = os.getenv("MQTT_USERNAME", "")
+mqtt_pass = os.getenv("MQTT_PASSWORD", "")
 mqtt_timeout = int(os.getenv("MQTT_TIMEOUT", "120"))
 
 MQTT_TOPIC = "device/#"
@@ -20,9 +20,6 @@ MQTT_TOPIC = "device/#"
 gpio = Gpio()
 kef = Kef()
 
-# The callback for logging of the mqtt client
-def on_log(_client, _userdata, level, buff):
-    log.log(level, buff)
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(_client, _userdata, _flags, rc):
@@ -85,8 +82,10 @@ if "__main__" == __name__:
     mqtt_client.on_connect = on_connect
     mqtt_client.on_disconnect = on_disconnect
     mqtt_client.on_message = on_message
-    mqtt_client.on_log = on_log
 
+    if mqtt_user:
+        mqtt_client.username_pw_set(mqtt_user, mqtt_pass)
+        
     mqtt_client.connect(mqtt_broker, mqtt_port, mqtt_timeout)
 
     # Blocking call that processes network traffic, dispatches callbacks and
