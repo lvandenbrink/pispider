@@ -5,8 +5,12 @@ from os import system
 from glob import glob
 from time import sleep
 from logging.handlers import RotatingFileHandler
+from dotenv import load_dotenv
 import paho.mqtt.publish as publish
 
+
+env_file = os.getenv("ENV_FILE", "./config/config.env")
+load_dotenv(env_file)
 
 #########################################################
 # Configure logging
