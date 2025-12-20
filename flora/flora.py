@@ -5,6 +5,7 @@ from datetime import datetime
 from logging.handlers import RotatingFileHandler
 import paho.mqtt.publish as mqtt_publish
 from btlewrap.bluepy import BluepyBackend
+from btlewrap.base import BluetoothBackendException
 from miflora.miflora_poller import (
     MI_BATTERY,
     MI_CONDUCTIVITY,
@@ -44,31 +45,34 @@ def read(alias, address):
         if poller.parameter_value(MI_MOISTURE) < 1:
             log.warning("moisture below 1: %s", poller)
             return
-
-        data = {
-            "plant": alias,
-            "name": poller.name(),
-            "moisture": poller.parameter_value(MI_MOISTURE),
-            "temperature": poller.parameter_value(MI_TEMPERATURE),
-            "light": poller.parameter_value(MI_LIGHT),
-            "conductivity": poller.parameter_value(MI_CONDUCTIVITY),
-            "battery": poller.parameter_value(MI_BATTERY),
-            "firmware": poller.firmware_version(),
-            "sensor": "miflora",
-            "time": datetime.now().replace(microsecond=0).isoformat()
-        }
-
-        publish(alias, data)
-
+    except (BluetoothBackendException) as e:
+        log.error("failed to read '%s' (%s): BluetoothBackendException: %s", alias, address, e.__cause__)
+        return
     except (OSError, ValueError, RuntimeError) as e:
-        log.error("failed to read '%s' (%s):\n%s", alias, address, e)
+        log.error("failed to read '%s' (%s)", alias, address, exc_info=e)
+        return  
+
+    data = {
+        "plant": alias,
+        "name": poller.name(),
+        "moisture": poller.parameter_value(MI_MOISTURE),
+        "temperature": poller.parameter_value(MI_TEMPERATURE),
+        "light": poller.parameter_value(MI_LIGHT),
+        "conductivity": poller.parameter_value(MI_CONDUCTIVITY),
+        "battery": poller.parameter_value(MI_BATTERY),
+        "firmware": poller.firmware_version(),
+        "sensor": "miflora",
+        "time": datetime.now().replace(microsecond=0).isoformat()
+    }
+
+    publish(alias, data)
 
 
 def publish(plant, data):
     try:
         topic = f"{mqtt_topic}/{plant}"
         auth = {"username": mqtt_user, "password": mqtt_pass} if mqtt_user else None
-        log.debug("publish `%s`: %s", topic, data)
+        log.debug("publish '%s': %s", topic, data)
 
         result = mqtt_publish.single(
             topic,
@@ -78,11 +82,10 @@ def publish(plant, data):
             auth=auth,
             retain=True,
         )
-        if result is None:
-            log.info("message published successfully result: %s", result)
+        log.info("message publish for '%s': %s", plant, "Success" if result is None else str(result))
 
     except (OSError, ValueError, RuntimeError, mqtt_publish.MQTTException) as e:
-        log.error("failed to publish plant %s", plant, exc_info=e)
+        log.error("failed to publish plant '%s'", plant, exc_info=e)
 
 
 ########################

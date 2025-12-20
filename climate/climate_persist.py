@@ -110,7 +110,7 @@ def on_disconnect(_client, _userdata, rc):
 # The callback for when a PUBLISH message is received from the server.
 def on_message(_client, _userdata, msg):
     try:
-        device = msg.topic[len(mqtt_topic) - 1 :]
+        device = msg.topic[len(mqtt_topic) + 1 :]
         entry = msg.payload.decode("utf-8")
 
         data = prepare_data(device, entry)
