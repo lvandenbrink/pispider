@@ -15,14 +15,10 @@ from ping3 import ping
 ###############################################
 SERVICES = [
     "climate",
-    "hives",
-    "environmentals",
-    "electricity_meter",
-    "fauxmo",
-    "flora_persists",
+    "energy",
+    "flora",
     "ghome",
-    "grafana-server",
-    "influxdb",
+    "hives",
     "nginx",
     "metriful",
     "mosquitto",

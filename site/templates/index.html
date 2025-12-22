@@ -51,7 +51,7 @@
 				success: function(data) {
 					var status_body = '<ul class="status">';
 					$.each(data, function(k, v) {
-						var indicator = v == '0' ? 'online' : 'offline';
+						var indicator = v == true ? 'online' : 'offline';
 						status_body += '<li class="status '+ indicator +'">'+k+'</li>';
 					});
 					status_body += "</ul>"
