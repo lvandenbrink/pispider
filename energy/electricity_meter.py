@@ -113,7 +113,7 @@ class EnergyMonitor:
 
     def init_mqtt_client(self):
         # Create the MQTT client object
-        self.mqtt_client = paho.Client("p1meter")
+        self.mqtt_client = paho.Client()
         self.mqtt_client.on_disconnect = self.on_disconnect
 
         if mqtt_user:
@@ -238,7 +238,7 @@ class EnergyMonitor:
         except (paho.WebsocketConnectionError, OSError, ValueError) as e:
             log.exception(e)
 
-    def on_disconnect(self, _client, _userdata, _rc):
+    def on_disconnect(self, _client, _userdata, _rc, _properties=None):
         log.info("mqtt client disconnected ok")
 
 

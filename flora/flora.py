@@ -3,6 +3,7 @@ import json
 import logging
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
+from dotenv import load_dotenv
 import paho.mqtt.publish as mqtt_publish
 from btlewrap.bluepy import BluepyBackend
 from btlewrap.base import BluetoothBackendException
@@ -14,6 +15,9 @@ from miflora.miflora_poller import (
     MI_TEMPERATURE,
     MiFloraPoller,
 )
+
+env_file = os.getenv("ENV_FILE", "./config/config.env")
+load_dotenv(env_file)
 
 # File of sensors with their addresses
 FLORA_SENSORS = os.getenv("FLORA_CONFIG", "sensors.json")
