@@ -229,7 +229,7 @@ class EnergyMonitor:
 
     def publish(self, field, value):
         try:
-            if self.mqtt_client is None:
+            if self.mqtt_client is None or not self.mqtt_client.is_connected():
                 self.init_mqtt_client()
 
             topic = f"{mqtt_topic}/{field}"
