@@ -76,10 +76,10 @@ def logs():
 
 @app.route("/logs/<file>", methods=["GET"])
 def file_log(file):
-    filename = os.path.basename(file)
-    path = os.path.realpath(os.path.join(LOG_DIR, f"{filename}.log"))
+    basename = os.path.basename(file)
+    filename = os.path.realpath(os.path.join(LOG_DIR, f"{basename}.log"))
 
-    if not path.startswith(os.path.realpath(LOG_DIR) + os.sep) or not os.path.isfile(path):
+    if not filename.startswith(os.path.realpath(LOG_DIR) + os.sep) or not os.path.isfile(filename):
         return render_template("logs.html")
 
     # pass file into the template so the js will call logs_stream with the argument
@@ -88,10 +88,10 @@ def file_log(file):
 
 @app.route("/logs/stream/<file>", methods=["GET"])
 def logs_stream(file):
-    filename = os.path.basename(file)
-    path = os.path.realpath(os.path.join(LOG_DIR, f"{filename}.log"))
+    basename = os.path.basename(file)
+    filename = os.path.realpath(os.path.join(LOG_DIR, f"{basename}.log"))
 
-    if not path.startswith(os.path.realpath(LOG_DIR) + os.sep) or not os.path.isfile(path):
+    if not filename.startswith(os.path.realpath(LOG_DIR) + os.sep) or not os.path.isfile(filename):
         log.warning(f"some sneaky one try to access log: {file} [ip={request.remote_addr}]")
         return "you nosy bastard", 400
 
