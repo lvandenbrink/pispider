@@ -234,7 +234,10 @@ class EnergyMonitor:
 
             topic = f"{mqtt_topic}/{field}"
             log.debug("publish `%s`: %s", topic, value)
-            self.mqtt_client.publish(topic, value, retain=True)
+            result = self.mqtt_client.publish(topic, value, retain=True)
+            if result.rc != paho.MQTT_ERR_SUCCESS:
+                log.error("failed to publish to topic %s: %s", topic, paho.error_string(result.rc))
+
         except (paho.WebsocketConnectionError, OSError, ValueError) as e:
             log.exception(e)
 
