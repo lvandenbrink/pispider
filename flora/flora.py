@@ -5,6 +5,7 @@ from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from dotenv import load_dotenv
 import paho.mqtt.publish as mqtt_publish
+import paho.mqtt.client as paho
 from btlewrap.bluepy import BluepyBackend
 from btlewrap.base import BluetoothBackendException
 from miflora.miflora_poller import (
@@ -50,11 +51,11 @@ def read(alias, address):
             log.warning("moisture below 1: %s", poller)
             return
     except (BluetoothBackendException) as e:
-        log.error("failed to read '%s' (%s): BluetoothBackendException: %s", alias, address, e.__cause__)
+        log.error("failed to read '%s' (%s): BluetoothBackendException: %s", alias, address, e.__cause__ or e)
         return
     except (OSError, ValueError, RuntimeError) as e:
         log.error("failed to read '%s' (%s)", alias, address, exc_info=e)
-        return  
+        return
 
     data = {
         "plant": alias,
@@ -86,7 +87,8 @@ def publish(plant, data):
             auth=auth,
             retain=True,
         )
-        log.info("message publish for '%s': %s", plant, "Success" if result is None else str(result))
+
+        log.info("message publish for '%s' %s", plant, "" if result is None else paho.error_string(result.rc))
 
     except (OSError, ValueError, RuntimeError, mqtt_publish.MQTTException) as e:
         log.error("failed to publish plant '%s'", plant, exc_info=e)

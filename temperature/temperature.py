@@ -102,8 +102,8 @@ def publish_temp(temperature):
         result = publish.single(
             mqtt_topic, msg, hostname=mqtt_broker, port=mqtt_port, auth=auth
         )
-        if result is None:
-            log.info("message published successfully result: %s", result)
+        if result is not None:
+            log.info("message published unsuccessfully: %s", result)
 
     except (OSError, ValueError, publish.MQTTException) as e:
         log.exception(e)
