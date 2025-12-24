@@ -5,9 +5,14 @@ import json
 import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
+from dotenv import load_dotenv
 import paho.mqtt.client as mqtt
 from influxdb import InfluxDBClient
+from influxdb.exceptions import InfluxDBClientError 
 
+
+env_file = os.getenv("ENV_FILE", "./config/config.env")
+load_dotenv(env_file)
 
 # MQTT connection variables
 mqtt_broker = os.getenv("MQTT_BROKER", "localhost")
@@ -50,7 +55,7 @@ def on_connect(client, _userdata, _flags, rc):
 # The callback for when a PUBLISH message is received from the server.
 def on_message(_client, _userdata, msg):
     try:
-        device = msg.topic[len(mqtt_topic)-1:]
+        device = msg.topic[len(mqtt_topic)+1:]
         message = json.loads(msg.payload.decode("utf-8"))
 
         if device == 'esp-flora':
@@ -64,11 +69,16 @@ def on_message(_client, _userdata, msg):
                 'fields': {
                     'plant': 'lemon-dracaena',
                     'temperature': round(float(message['temperature']), 1),
-                    'moisture': round(float(message['moisture'])),
                     'time': datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
                 }
             }
-        elif message['plant']:
+            if message['moisture'] <= 100:
+                data['fields']['moisture'] = round(float(message['moisture']), 1)
+            else:
+                data['fields']['moisture_raw'] = int(message['moisture'])
+                log.warning("ignoring moisture value %s for device=%s", message['moisture'], device)
+
+        elif 'plant' in message:
             data = {
                 'measurement': message['plant'],
                 'tags': {
@@ -87,10 +97,11 @@ def on_message(_client, _userdata, msg):
         # Send the JSON data to InfluxDB
         successful = dbclient.write_points([data])
         if not successful:
-            log.error("failed to write to db for '%s': %s", device, data)
+            log.error("failed to write to db for '%s': '%s'", device, data)
 
-    except (ValueError, KeyError, json.JSONDecodeError, InfluxDBClient.client.InfluxDBClientError) as e:
+    except (ValueError, KeyError, json.JSONDecodeError, InfluxDBClientError) as e:
         log.error("failed to write to db", exc_info=e)
+
 
 ########################
 # Main
