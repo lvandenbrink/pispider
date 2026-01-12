@@ -151,9 +151,6 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
-# mkdocs documentation
-/site
-
 # mypy
 .mypy_cache/
 .dmypy.json
@@ -205,3 +202,10 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Local configuration with secrets
+config.env
+.crypt-drive
+.crypt-me
+.credentials
+secrets.yml

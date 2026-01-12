@@ -16,10 +16,10 @@ DEVICES = {
 }
 
 POWER = 13
-B1 = 16
-B2 = 12
-B3 = 21
-B4 = 19
+B1 = 16 # Button 1 - computer
+B2 = 12 # Button 2 - speaker
+B3 = 21 # Button 3 - unused
+B4 = 19 # Button 4 - unused
 POWER4 = 26
 
 class Gpio:
