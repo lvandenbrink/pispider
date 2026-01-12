@@ -15,9 +15,10 @@ from ping3 import ping
 ###############################################
 SERVICES = [
     "climate",
+    "cloudflared",
     "energy",
     "flora",
-    "ghome",
+    "ghome-mqtt",
     "hives",
     "nginx",
     "metriful",
