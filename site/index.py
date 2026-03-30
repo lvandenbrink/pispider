@@ -25,6 +25,7 @@ SERVICES = [
     "mosquitto",
     "site",
     "temperature",
+    "daikin-sensory",
 ]
 KEF_IP = os.getenv("KEF_IP", "192.168.1.1")
 LOG_DIR = os.getenv("LOG_DIR", "/var/log/")

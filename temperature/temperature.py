@@ -127,4 +127,5 @@ if __name__ == "__main__":
                     read_temp(device)
                 sleep(300)
         except (OSError, ValueError) as e:
-            log.exception("unexpected error: %s", e)
+            log.exception("failed to read temp: %s", e)
+            sleep(300)
