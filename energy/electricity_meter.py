@@ -5,8 +5,8 @@ import time
 import logging
 import re
 import json
-import serial
 from logging.handlers import RotatingFileHandler
+import serial
 from influxdb import InfluxDBClient
 from influxdb.exceptions import InfluxDBClientError, InfluxDBServerError
 import paho.mqtt.client as paho
@@ -32,6 +32,18 @@ influx_energy_db = os.getenv("INFLUXDB_ENERGY_DATABASE", "energy")
 # think of measurement as a SQL table, it's not...but...
 measurement = os.getenv("INFLUXDB_ENERGY_MEASUREMENT", "meter")
 location = os.getenv("LOCATION", "house")
+
+# Tolerance to allow for float noise when checking that cumulative counters that only increase.
+MONOTONIC_TOLERANCE = float(os.getenv("MONOTONIC_TOLERANCE", "0.01"))
+
+# Cumulative counters that never decrease.
+MONOTONIC_FIELDS = {
+    "meter_t1",
+    "meter_t2",
+    "meter_back_t1",
+    "meter_back_t2",
+    "gas_meter",
+}
 
 # Configure logging
 log_dir = os.path.join(os.getenv("LOG_DIR", "/var/log"), "electricity-meter.log")
@@ -92,6 +104,7 @@ obis_table = {
 class EnergyMonitor:
 
     def __init__(self):
+        self.last_values = {}
         self.init_influxdb()
         self.init_mqtt_client()
 
@@ -136,16 +149,22 @@ class EnergyMonitor:
 
         try:
             ser.open()
-            lines = []
+            raw_lines = []
             while True:
-                line = ser.readline()
-                if line.startswith(b"/KFM5KAIFA-METER"):  # Header information
-                    self.datagram(lines)
-                    lines = []
-                elif not line.startswith(b"\r\n"):
-                    lines.append(line.decode().strip())
-        except UnicodeDecodeError as e:
-            log.error("failed to decode line %r", line, exc_info=e)
+                raw = ser.readline()
+                if raw.startswith(b"/KFM5KAIFA-METER"):  # Header: start of a new telegram
+                    raw_lines = [raw]
+                    continue
+
+                if not raw_lines:
+                    # Haven't seen a header yet; ignore stray bytes.
+                    continue
+
+                raw_lines.append(raw)
+
+                if raw.startswith(b"!"):  # Checksum line: end of telegram
+                    self.datagram(raw_lines)
+                    raw_lines = []
         except KeyboardInterrupt:
             log.error("Serial reading manually stopped.")
         except (serial.SerialException, OSError) as e:
@@ -157,7 +176,55 @@ class EnergyMonitor:
         finally:
             ser.close()
 
-    def datagram(self, lines):
+    def calc_crc16(self, data: bytes) -> int:
+        """CRC16/ARC checksum as used in the DSMR P1 telegram trailer."""
+        crc = 0
+        for byte in data:
+            crc ^= byte
+            for _ in range(8):
+                if crc & 1:
+                    crc = (crc >> 1) ^ 0xA001
+                else:
+                    crc >>= 1
+        return crc
+
+    def verify_checksum(self, telegram: bytes) -> bool:
+        """
+        Verify the CRC16 trailer of a raw DSMR telegram. The checksum covers all bytes from the header up to and including the '!' marker; it is followed by 4 hex digits.
+        """
+        idx = telegram.rfind(b"!")
+        if idx == -1:
+            log.warning("no checksum marker ('!') found in telegram")
+            return False
+
+        data_part = telegram[: idx + 1]
+        checksum_part = telegram[idx + 1 : idx + 5].strip()
+
+        try:
+            expected = int(checksum_part, 16)
+        except ValueError:
+            log.warning("malformed checksum field: %r", checksum_part)
+            return False
+
+        actual = self.calc_crc16(data_part)
+        if actual != expected:
+            log.error("checksum mismatch: computed 0x%04X, telegram claims 0x%04X",actual,expected)
+        return actual == expected
+
+    def datagram(self, raw_lines):
+        full_telegram = b"".join(raw_lines)
+
+        checksum_ok = self.verify_checksum(full_telegram)
+        if not checksum_ok:
+            # Discard the whole telegram if the checksum is not ok
+            log.error("checksum mismatch, datagram: %s", raw_lines)
+            return
+        try:
+            lines = [line.decode().strip() for line in raw_lines]
+        except UnicodeDecodeError as e:
+            log.error("failed to decode checksum-verified telegram", exc_info=e)
+            return
+
         iso = time.ctime()
         log.debug("===========================================================")
         log.info("handle datagram: %s", iso)
@@ -208,16 +275,28 @@ class EnergyMonitor:
             for regex, key in obis_table.items():
                 try:
                     match = re.match(regex, line)
-                    if match:
-                        value = match.group(1)
+                    if not match:
+                        continue
 
-                        if re.fullmatch(r"\d+", value):
-                            value = int(value)
-                        elif re.fullmatch(r"\d+\.\d+", value):
-                            value = float(value)
+                    value = match.group(1)
 
-                        results[key] = value
-                        break  # move to next line after first match
+                    if re.fullmatch(r"\d+", value):
+                        value = int(value)
+                    elif re.fullmatch(r"\d+\.\d+", value):
+                        value = float(value)
+
+                    if key in MONOTONIC_FIELDS and not self.is_plausible_monotonic(
+                        key, value
+                    ):
+                        # Skip this field only; the rest of the (checksum-valid)
+                        # telegram is still trustworthy.
+                        break
+
+                    if key in MONOTONIC_FIELDS:
+                        self.last_values[key] = value
+
+                    results[key] = value
+                    break  # move to next line after first match
                 except (re.error, IndexError) as e:
                     log.error(
                         "Failed to match regex '%s' on line: %s",
@@ -226,6 +305,28 @@ class EnergyMonitor:
                         exc_info=e,
                     )
         return results
+
+    def is_plausible_monotonic(self, key, value):
+        """
+        Reject a cumulative-counter reading that decreases from the last
+        known-good value by more than a small tolerance. Returns True if the
+        value is acceptable.
+        """
+        prev = self.last_values.get(key)
+        if prev is None:
+            return True  # no baseline yet, accept and establish one
+
+        if value < prev - MONOTONIC_TOLERANCE:
+            log.warning(
+                "rejected implausible reading for %s: %s < previous %s (tolerance %s)",
+                key,
+                value,
+                prev,
+                MONOTONIC_TOLERANCE,
+            )
+            return False
+
+        return True
 
     def publish(self, field, value):
         try:
